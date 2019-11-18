@@ -49,6 +49,14 @@ pub fn ascii(arg: &Option<Bytes>) -> Result<Option<i64>> {
     }))
 }
 
+#[rpn_fn]
+#[inline]
+pub fn reverse_binary(arg: &Option<Bytes>) -> Result<Option<Bytes>> {
+    Ok(arg
+        .as_ref()
+        .map(|s| s.iter().rev().map(|x| *x).collect::<Bytes>()))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -202,6 +210,27 @@ mod tests {
             let output = RpnFnScalarEvaluator::new()
                 .push_param(arg)
                 .evaluate(ScalarFuncSig::Ascii)
+                .unwrap();
+            assert_eq!(output, expect_output);
+        }
+    }
+
+    #[test]
+    fn test_reverse_binary() {
+        let tests = vec![
+            (Some(b"hello".to_vec()), Some(b"olleh".to_vec())),
+            (Some(b"".to_vec()), Some(b"".to_vec())),
+            (
+                Some("中国".as_bytes().to_vec()),
+                Some(vec![0o275u8, 0o233u8, 0o345u8, 0o255u8, 0o270u8, 0o344u8]),
+            ),
+            (None, None),
+        ];
+
+        for (arg, expect_output) in tests {
+            let output = RpnFnScalarEvaluator::new()
+                .push_param(arg)
+                .evaluate(ScalarFuncSig::ReverseBinary)
                 .unwrap();
             assert_eq!(output, expect_output);
         }
