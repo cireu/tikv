@@ -143,6 +143,20 @@ impl ScalarFunc {
             .map(|_| Some(Cow::Owned(j)))
             .map_err(Error::from)
     }
+
+    #[inline]
+    pub fn json_valid<'a, 'b: 'a>(
+        &'b self,
+        ctx: &mut EvalContext,
+        row: &'a [Datum],
+    ) -> Result<Option<i64>> {
+        let json = self.children[0].eval_json(ctx, row);
+        match json {
+            Ok(None) => Ok(None),
+            Ok(Some(_)) => Ok(Some(1)),
+            Err(_) => Ok(Some(0)),
+        }
+    }
 }
 
 struct JsonFuncArgsParser<'a> {
